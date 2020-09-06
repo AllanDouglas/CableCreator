@@ -3,9 +3,9 @@ A simple Cable/Rope Creator for Unity3D
 
 - Using:
   * Mesh Generation
-  * SkinedMeshRendere
+  * SkinedMeshRenderer
   * Rigibody
   * Joints
-  * Colisions
+  * Collisions
 
 Sample Scene with example
