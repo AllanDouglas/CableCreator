@@ -16,20 +16,22 @@ namespace RopeCreator
             var verticeStartsAt = 0;
             var triangleStartAt = 0;
 
-            Node lastNode = default;
+            Node previousNode = default;
+            Vector3 direction = points[1].position - points[0].position;
 
             for (int i = 0; i < points.Length; i++)
             {
+
                 var node = new Node(points[i], verticesArray, resolution, verticeStartsAt);
 
-                FillVertices(resolution, radius, node);
+                FillVertices(resolution, radius, node, direction);
                 if (i > 0)
                 {
                     if (i == 1)
                     {
-                        lastNode.GetTriangles(trianglesArray, ref triangleStartAt);
+                        previousNode.GetTriangles(trianglesArray, ref triangleStartAt);
                     }
-                    lastNode.GetTrianglesTo(node, trianglesArray, ref triangleStartAt);
+                    previousNode.GetTrianglesTo(node, trianglesArray, ref triangleStartAt);
                     if (i == points.Length - 1)
                     {
                         node.GetTriangles(trianglesArray, ref triangleStartAt);
@@ -37,7 +39,7 @@ namespace RopeCreator
                 }
 
                 verticeStartsAt += node.Size;
-                lastNode = node;
+                previousNode = node;
             }
 
             var weights = new BoneWeight[verticesArray.Length];
@@ -68,7 +70,7 @@ namespace RopeCreator
                 var index = 0;
                 for (var i = 0; i < _points.Length; i++)
                 {
-                    _bindPoses[i] = _points[i].worldToLocalMatrix; //* obj.transform.localToWorldMatrix;
+                    _bindPoses[i] = _points[i].worldToLocalMatrix;
 
                     for (var j = 0; j <= _resolution; j++)
                     {
@@ -82,21 +84,24 @@ namespace RopeCreator
             }
         }
 
-        static void FillVertices(int resolution, float radius, Node vertice)
+        static void FillVertices(int resolution, float radius, Node vertice, Vector3 direction)
         {
+            direction = direction.normalized;
+            var up = Quaternion.LookRotation(direction) * Vector3.up;
+            var cross = Vector3.Cross(direction, up);
+            var point = cross * radius;
+#if UNITY_EDITOR
+            Debug.DrawRay(vertice.Center, up, Color.green);
+            Debug.DrawRay(vertice.Center, direction, Color.red);
+            Debug.DrawRay(vertice.Center, cross, Color.blue);
+#endif
             for (int i = 0; i < resolution; i++)
             {
-                var currentAngle = 2f * Mathf.PI / resolution * i;
-
-                var cos = Mathf.Cos(currentAngle);
-                var sin = Mathf.Sin(currentAngle);
-
-                vertice.Add(new Vector3(
-                    cos * radius,
-                    sin * radius,
-                    0
-                ) + vertice.Center);
+                var currentAngle = (2f * Mathf.PI / resolution * i) * Mathf.Rad2Deg;
+                var finalPoint = Quaternion.AngleAxis(currentAngle, direction) * point;
+                vertice.Add(vertice.Center + finalPoint);
             }
+           
         }
 
         private struct Node
@@ -113,7 +118,8 @@ namespace RopeCreator
             public Vector3 Center => Bone.position;
             public int Size => amount + 1;
 
-            public Node(Transform bone, Vector3[] vectors, int amount, int startAt) : this(amount, bone, startAt)
+            public Node(Transform bone, Vector3[] vectors, int amount, int startAt)
+                : this(amount, bone, startAt)
             {
                 vertices = vectors;
                 Add(bone.localPosition);
