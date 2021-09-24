@@ -6,7 +6,7 @@ namespace RopeCreator
 
     public class RopeMeshGenerator
     {
-        public static Mesh Generate(Transform[] points, int resolution, float radius)
+        public static Mesh Generate(RopePiece[] points, int resolution, float radius)
         {
             var connectionTriangles = resolution * 6;
             var trianglesByResolution = resolution * 3;
@@ -22,7 +22,7 @@ namespace RopeCreator
             for (int i = 0; i < points.Length; i++)
             {
 
-                var node = new Node(points[i], verticesArray, resolution, verticeStartsAt);
+                var node = new Node(points[i].transform, verticesArray, resolution, verticeStartsAt);
 
                 FillVertices(resolution, radius, node, direction);
                 if (i > 0)
@@ -65,12 +65,12 @@ namespace RopeCreator
             mesh.RecalculateNormals();
             return mesh;
 
-            int FillBones(Transform[] _points, int _resolution, BoneWeight[] _weights, Matrix4x4[] _bindPoses)
+            int FillBones(RopePiece[] _points, int _resolution, BoneWeight[] _weights, Matrix4x4[] _bindPoses)
             {
                 var index = 0;
                 for (var i = 0; i < _points.Length; i++)
                 {
-                    _bindPoses[i] = _points[i].worldToLocalMatrix;
+                    _bindPoses[i] = _points[i].transform.worldToLocalMatrix;
 
                     for (var j = 0; j <= _resolution; j++)
                     {

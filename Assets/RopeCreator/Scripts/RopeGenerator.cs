@@ -3,20 +3,44 @@ using UnityEngine;
 
 namespace RopeCreator
 {
-    public struct RopeObjectData
+    public class RopePiece
+    {
+        public readonly HingeJoint joint;
+        public readonly Collider collider;
+        public readonly Rigidbody rigidbody;
+        public Vector3 position => collider.transform.position;
+        public Transform transform => collider.transform;
+        public GameObject gameObject => collider.gameObject;
+
+        public RopePiece(HingeJoint joint, Collider collider, Rigidbody rigidbody)
+        {
+            this.joint = joint;
+            this.collider = collider;
+            this.rigidbody = rigidbody;
+        }
+    }
+
+    public class RopeObjectData
     {
         public readonly GameObject gameObject, firstPiece, lastPiece;
-
-        public readonly List<Transform> pieces;
+        public readonly List<RopePiece> pieces;
+        public Transform[] points { get; private set; }
 
         public RopeObjectData(GameObject gameObject,
             GameObject firstPiece, GameObject lastPiece,
-            List<Transform> pieces)
+            List<RopePiece> pieces)
         {
             this.gameObject = gameObject;
             this.firstPiece = firstPiece;
             this.lastPiece = lastPiece;
             this.pieces = pieces;
+
+            points = new Transform[pieces.Count];
+
+            for (int i = 0; i < pieces.Count; i++)
+            {
+                points[i] = pieces[i].transform;
+            }
         }
     }
 
@@ -32,13 +56,15 @@ namespace RopeCreator
                 float drag = 0,
                 float spring = 100,
                 float damper = 10,
-                bool hasCollision = true)
+                bool hasCollision = true,
+                int layer = 0)
         {
             var ropeObject = new GameObject("Rope");
+            ropeObject.layer = layer;
 
             var direction = (end - start).normalized;
             var currentPosition = start;
-            var pieces = new List<Transform>();
+            var pieces = new List<RopePiece>();
             var isKinematic = true;
             HingeJoint lastHinge = null;
 
@@ -57,7 +83,8 @@ namespace RopeCreator
                     _lastHinge: lastHinge,
                     _isKinematic: isKinematic,
                     _createCollider: hasCollision,
-                    _ropeResolution: ropeResolution);
+                    _ropeResolution: ropeResolution,
+                    _layer: layer);
 
                 isKinematic = false;
 
@@ -84,24 +111,34 @@ namespace RopeCreator
             var points = pieces.ToArray();
             var mesh = RopeMeshGenerator.Generate(points, resolution, radius);
 
-            meshRenderer.bones = points;
-            meshRenderer.sharedMesh = mesh;
-
-            return new RopeObjectData(gameObject: ropeObject,
+            var ropeData = new RopeObjectData(gameObject: ropeObject,
                                       firstPiece: pieces[0].gameObject,
                                       lastPiece: pieces[pieces.Count - 1].gameObject,
                                       pieces);
 
-            HingeJoint CreatePiece(float _radius, GameObject _ropeObject,
-                Vector3 _direction, ref Vector3 _currentPosition,
-                List<Transform> _pieces, HingeJoint _lastHinge,
-                bool _isKinematic = false, bool _createCollider = false, float _ropeResolution = 2)
+            meshRenderer.bones = ropeData.points;
+            meshRenderer.sharedMesh = mesh;
+
+            return ropeData;
+
+            HingeJoint CreatePiece(
+                float _radius,
+                GameObject _ropeObject,
+                Vector3 _direction,
+                ref Vector3 _currentPosition,
+                List<RopePiece> _pieces,
+                HingeJoint _lastHinge,
+                bool _isKinematic = false,
+                bool _createCollider = false,
+                float _ropeResolution = 2,
+                int _layer = 0)
             {
                 var piece = new GameObject("Rope Piece");
+                SphereCollider collider = null;
+                piece.layer = _layer;
                 piece.transform.parent = _ropeObject.transform;
                 piece.transform.localPosition = _currentPosition;
                 _currentPosition += _radius * _ropeResolution * _direction;
-                _pieces.Add(piece.transform);
                 var rb = piece.AddComponent<Rigidbody>();
                 rb.drag = drag;
                 rb.isKinematic = _isKinematic;
@@ -109,7 +146,7 @@ namespace RopeCreator
                 var hinge = piece.AddComponent<HingeJoint>();
                 var up = Quaternion.LookRotation(direction) * Vector3.up;
                 var cross = Vector3.Cross(direction, up);
-                
+
                 hinge.axis = cross;
                 hinge.enableCollision = false;
                 hinge.enablePreprocessing = false;
@@ -123,7 +160,7 @@ namespace RopeCreator
 
                 if (_createCollider)
                 {
-                    var collider = piece.AddComponent<SphereCollider>();
+                    collider = piece.AddComponent<SphereCollider>();
                     collider.radius = _radius;
                     collider.center += Vector3.forward * _radius;
 
@@ -139,7 +176,7 @@ namespace RopeCreator
                 {
                     _lastHinge.connectedBody = rb;
                 }
-
+                _pieces.Add(new RopePiece(hinge, collider, rb));
                 return hinge;
             }
         }

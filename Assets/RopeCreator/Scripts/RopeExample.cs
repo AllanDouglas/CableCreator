@@ -4,6 +4,7 @@ namespace RopeCreator
 {
     public class RopeExample : MonoBehaviour
     {
+        [SerializeField] private string layer;
         [SerializeField] private float radius = .5f;
         [SerializeField] private Transform start;
         [SerializeField] private Transform end;
@@ -14,10 +15,17 @@ namespace RopeCreator
         [SerializeField] private bool hasCollision = false;
         [Range(2, 25), SerializeField] private int resolution = 10;
         [SerializeField] private Material material;
+        [Header("Rigidbody Constraints")]
+        [SerializeField] private bool lockYPosition;
+        [SerializeField] private bool lockXPosition;
+        [SerializeField] private bool lockZPosition;
+        [SerializeField] private bool lockYRotation;
+        [SerializeField] private bool lockXRotation;
+        [SerializeField] private bool lockZRotation;
 
         private void Start()
         {
-            RopeGenerator.Create(
+            var data = RopeGenerator.Create(
                 start: start.position,
                 end: end.position,
                 resolution: resolution,
@@ -27,7 +35,24 @@ namespace RopeCreator
                 drag: drag,
                 spring: spring,
                 damper: damper,
-                hasCollision: hasCollision);
+                hasCollision: hasCollision,
+                layer: LayerMask.NameToLayer(layer));
+
+            foreach (var piece in data.pieces)
+            {
+                if (lockXPosition)
+                    piece.rigidbody.constraints |= RigidbodyConstraints.FreezePositionX;
+                if (lockYPosition)
+                    piece.rigidbody.constraints |= RigidbodyConstraints.FreezePositionY;
+                if (lockZPosition)
+                    piece.rigidbody.constraints |= RigidbodyConstraints.FreezePositionZ;
+                if (lockXRotation)
+                    piece.rigidbody.constraints |= RigidbodyConstraints.FreezeRotationX;
+                if (lockYRotation)
+                    piece.rigidbody.constraints |= RigidbodyConstraints.FreezeRotationY;
+                if (lockZRotation)
+                    piece.rigidbody.constraints |= RigidbodyConstraints.FreezeRotationZ;
+            }
         }
 
     }
