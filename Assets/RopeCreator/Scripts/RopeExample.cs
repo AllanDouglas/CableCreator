@@ -16,11 +16,11 @@ namespace RopeCreator
         [Range(2, 25), SerializeField] private int resolution = 10;
         [SerializeField] private Material material;
         [Header("Rigidbody Constraints")]
-        [SerializeField] private bool lockYPosition;
         [SerializeField] private bool lockXPosition;
+        [SerializeField] private bool lockYPosition;
         [SerializeField] private bool lockZPosition;
-        [SerializeField] private bool lockYRotation;
         [SerializeField] private bool lockXRotation;
+        [SerializeField] private bool lockYRotation;
         [SerializeField] private bool lockZRotation;
 
         private void Start()

@@ -8,9 +8,9 @@ namespace RopeCreator
         public readonly HingeJoint joint;
         public readonly Collider collider;
         public readonly Rigidbody rigidbody;
-        public Vector3 position => collider.transform.position;
-        public Transform transform => collider.transform;
-        public GameObject gameObject => collider.gameObject;
+        public Vector3 position => rigidbody.position;
+        public Transform transform => rigidbody.transform;
+        public GameObject gameObject => rigidbody.gameObject;
 
         public RopePiece(HingeJoint joint, Collider collider, Rigidbody rigidbody)
         {
@@ -162,14 +162,12 @@ namespace RopeCreator
                 {
                     collider = piece.AddComponent<SphereCollider>();
                     collider.radius = _radius;
-                    collider.center += Vector3.forward * _radius;
+                    // Collider collider2 = default;
 
-                    Collider collider2 = default;
-
-                    if (_lastHinge?.TryGetComponent(out collider2) ?? false)
-                    {
-                        Physics.IgnoreCollision(collider, collider2, true);
-                    }
+                    // if (_lastHinge?.TryGetComponent(out collider2) ?? false)
+                    // {
+                    //     Physics.IgnoreCollision(collider, collider2, true);
+                    // }
                 }
 
                 if (_lastHinge)
