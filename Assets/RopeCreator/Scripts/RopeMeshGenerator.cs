@@ -17,7 +17,8 @@ namespace RopeCreator
             var triangleStartAt = 0;
 
             Node previousNode = default;
-            Vector3 direction = points[1].position - points[0].position;
+
+            var direction = (points[1].position - points[0].position).normalized;
 
             for (int i = 0; i < points.Length; i++)
             {
@@ -40,6 +41,8 @@ namespace RopeCreator
 
                 verticeStartsAt += node.Size;
                 previousNode = node;
+                if (i + 1 < points.Length)
+                    direction = (points[i + 1].position - points[i].position).normalized;
             }
 
             var weights = new BoneWeight[verticesArray.Length];
@@ -101,7 +104,7 @@ namespace RopeCreator
                 var finalPoint = Quaternion.AngleAxis(currentAngle, direction) * point;
                 vertice.Add(vertice.Center + finalPoint);
             }
-           
+
         }
 
         private struct Node

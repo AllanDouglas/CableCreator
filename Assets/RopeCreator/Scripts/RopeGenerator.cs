@@ -23,21 +23,21 @@ namespace RopeCreator
     public class RopeObjectData
     {
         public readonly GameObject gameObject, firstPiece, lastPiece;
-        public readonly List<RopePiece> pieces;
+        public readonly RopePiece[] pieces;
         public Transform[] points { get; private set; }
 
         public RopeObjectData(GameObject gameObject,
             GameObject firstPiece, GameObject lastPiece,
-            List<RopePiece> pieces)
+            RopePiece[] pieces)
         {
             this.gameObject = gameObject;
             this.firstPiece = firstPiece;
             this.lastPiece = lastPiece;
             this.pieces = pieces;
 
-            points = new Transform[pieces.Count];
+            points = new Transform[pieces.Length];
 
-            for (int i = 0; i < pieces.Count; i++)
+            for (int i = 0; i < pieces.Length; i++)
             {
                 points[i] = pieces[i].transform;
             }
@@ -105,21 +105,11 @@ namespace RopeCreator
                 _lastHinge: lastHinge,
                 _ropeResolution: ropeResolution);
 
-            var meshRenderer = ropeObject.AddComponent<SkinnedMeshRenderer>();
-            meshRenderer.sharedMaterial = material;
-
-            var points = pieces.ToArray();
-            var mesh = RopeMeshGenerator.Generate(points, resolution, radius);
-
-            var ropeData = new RopeObjectData(gameObject: ropeObject,
-                                      firstPiece: pieces[0].gameObject,
-                                      lastPiece: pieces[pieces.Count - 1].gameObject,
-                                      pieces);
-
-            meshRenderer.bones = ropeData.points;
-            meshRenderer.sharedMesh = mesh;
-
-            return ropeData;
+            return Create(pieces: pieces.ToArray(),
+                ropeObject: ropeObject,
+                resolution: resolution,
+                radius: radius,
+                material: material);
 
             HingeJoint CreatePiece(
                 float _radius,
@@ -162,12 +152,6 @@ namespace RopeCreator
                 {
                     collider = piece.AddComponent<SphereCollider>();
                     collider.radius = _radius;
-                    // Collider collider2 = default;
-
-                    // if (_lastHinge?.TryGetComponent(out collider2) ?? false)
-                    // {
-                    //     Physics.IgnoreCollision(collider, collider2, true);
-                    // }
                 }
 
                 if (_lastHinge)
@@ -177,6 +161,30 @@ namespace RopeCreator
                 _pieces.Add(new RopePiece(hinge, collider, rb));
                 return hinge;
             }
+        }
+
+        public static RopeObjectData Create(
+            RopePiece[] pieces,
+            GameObject ropeObject,
+            int resolution,
+            float radius,
+            Material material)
+        {
+            var meshRenderer = ropeObject.AddComponent<SkinnedMeshRenderer>();
+            meshRenderer.sharedMaterial = material;
+
+            var points = pieces;
+            var mesh = RopeMeshGenerator.Generate(points, resolution, radius);
+
+            var ropeData = new RopeObjectData(gameObject: ropeObject,
+                                      firstPiece: pieces[0].gameObject,
+                                      lastPiece: pieces[pieces.Length - 1].gameObject,
+                                      pieces);
+
+            meshRenderer.bones = ropeData.points;
+            meshRenderer.sharedMesh = mesh;
+
+            return ropeData;
         }
     }
 }
