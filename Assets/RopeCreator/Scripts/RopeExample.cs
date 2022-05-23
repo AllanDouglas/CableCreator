@@ -9,6 +9,7 @@ namespace RopeCreator
         [SerializeField] private Transform start;
         [SerializeField] private Transform end;
         [SerializeField] private float distanceBetweenNodes = 1;
+        [SerializeField] private float mass = 1;
         [SerializeField] private float drag = 0;
         [SerializeField] private float spring = 100;
         [SerializeField] private float damper = 1;
@@ -32,6 +33,7 @@ namespace RopeCreator
                 radius: radius,
                 material: material,
                 distanceBetweenNodes: distanceBetweenNodes,
+                mass: mass,
                 drag: drag,
                 spring: spring,
                 damper: damper,

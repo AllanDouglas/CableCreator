@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -96,6 +96,7 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaAO: 1
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
   m_UseShadowmask: 1
 --- !u!196 &4
@@ -208,19 +209,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 718481206}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd9a07b000492b946ac148966f1b30d7, type: 3}
+  m_Script: {fileID: 11500000, guid: cf2734c7b273745428f51f8528a267b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 0.5
+  layer: Default
+  radius: 0.1
   start: {fileID: 390018702}
   end: {fileID: 1020413682}
-  distanceBetweenNodes: 10
-  drag: 0
-  spring: 100
-  damper: 10
-  hasCollision: 0
-  resolution: 12
-  material: {fileID: 2100000, guid: f39f0770df9893944a6953c55fa1f62d, type: 2}
+  distanceBetweenNodes: 1
+  mass: 1
+  drag: 10
+  spring: 54000
+  damper: 3500
+  hasCollision: 1
+  resolution: 10
+  material: {fileID: 2100000, guid: f03b356ed5c067645bd9b1d2fee57dcf, type: 2}
+  lockXPosition: 0
+  lockYPosition: 0
+  lockZPosition: 0
+  lockXRotation: 0
+  lockYRotation: 1
+  lockZRotation: 1
 --- !u!4 &718481208
 Transform:
   m_ObjectHideFlags: 0
@@ -259,7 +268,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1020413681}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 61}
+  m_LocalPosition: {x: 0, y: 0, z: 30.33}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 338685300}
@@ -290,8 +299,9 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1091580274}
   m_Enabled: 1
-  serializedVersion: 9
+  serializedVersion: 10
   m_Type: 1
+  m_Shape: 0
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1
   m_Range: 10

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -52,6 +53,7 @@ namespace RopeCreator
                 int resolution,
                 float radius,
                 Material material,
+                float mass,
                 float distanceBetweenNodes = 1,
                 float drag = 0,
                 float spring = 100,
@@ -76,6 +78,7 @@ namespace RopeCreator
             {
                 lastHinge = CreatePiece(
                     _radius: radius,
+                    _mass: mass,
                     _ropeObject: ropeObject,
                     _direction: direction,
                     _currentPosition: ref currentPosition,
@@ -98,6 +101,7 @@ namespace RopeCreator
 
             CreatePiece(
                 _radius: radius,
+                _mass: mass,
                 _ropeObject: ropeObject,
                 _direction: direction,
                 _currentPosition: ref currentPosition,
@@ -113,6 +117,7 @@ namespace RopeCreator
 
             HingeJoint CreatePiece(
                 float _radius,
+                float _mass,
                 GameObject _ropeObject,
                 Vector3 _direction,
                 ref Vector3 _currentPosition,
@@ -128,10 +133,11 @@ namespace RopeCreator
                 piece.layer = _layer;
                 piece.transform.parent = _ropeObject.transform;
                 piece.transform.localPosition = _currentPosition;
-                _currentPosition += _radius * _ropeResolution * _direction;
+                _currentPosition += _ropeResolution * _direction;
                 var rb = piece.AddComponent<Rigidbody>();
                 rb.drag = drag;
                 rb.isKinematic = _isKinematic;
+                rb.mass = _mass;
 
                 var hinge = piece.AddComponent<HingeJoint>();
                 var up = Quaternion.LookRotation(direction) * Vector3.up;
@@ -140,7 +146,7 @@ namespace RopeCreator
                 hinge.axis = cross;
                 hinge.enableCollision = false;
                 hinge.enablePreprocessing = false;
-
+                hinge.useLimits = true;
                 hinge.useSpring = true;
                 hinge.spring = new JointSpring()
                 {
@@ -151,7 +157,7 @@ namespace RopeCreator
                 if (_createCollider)
                 {
                     collider = piece.AddComponent<SphereCollider>();
-                    collider.radius = _radius;
+                    collider.radius = Mathf.Max(_radius, .25f);
                 }
 
                 if (_lastHinge)
@@ -185,6 +191,11 @@ namespace RopeCreator
             meshRenderer.sharedMesh = mesh;
 
             return ropeData;
+        }
+
+        public static object Create(Vector3 start, Vector3 end, int resolution, float radius, Material material, float distanceBetweenNodes, object mass, float drag, float spring, float damper, bool hasCollision, int layer)
+        {
+            throw new NotImplementedException();
         }
     }
 }
