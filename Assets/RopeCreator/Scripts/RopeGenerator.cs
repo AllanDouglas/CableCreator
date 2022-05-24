@@ -4,47 +4,6 @@ using UnityEngine;
 
 namespace RopeCreator
 {
-    public class RopePiece
-    {
-        public readonly HingeJoint joint;
-        public readonly Collider collider;
-        public readonly Rigidbody rigidbody;
-        public Vector3 position => rigidbody.position;
-        public Transform transform => rigidbody.transform;
-        public GameObject gameObject => rigidbody.gameObject;
-
-        public RopePiece(HingeJoint joint, Collider collider, Rigidbody rigidbody)
-        {
-            this.joint = joint;
-            this.collider = collider;
-            this.rigidbody = rigidbody;
-        }
-    }
-
-    public class RopeObjectData
-    {
-        public readonly GameObject gameObject, firstPiece, lastPiece;
-        public readonly RopePiece[] pieces;
-        public Transform[] points { get; private set; }
-
-        public RopeObjectData(GameObject gameObject,
-            GameObject firstPiece, GameObject lastPiece,
-            RopePiece[] pieces)
-        {
-            this.gameObject = gameObject;
-            this.firstPiece = firstPiece;
-            this.lastPiece = lastPiece;
-            this.pieces = pieces;
-
-            points = new Transform[pieces.Length];
-
-            for (int i = 0; i < pieces.Length; i++)
-            {
-                points[i] = pieces[i].transform;
-            }
-        }
-    }
-
     public static class RopeGenerator
     {
         public static RopeObjectData Create(
@@ -58,7 +17,7 @@ namespace RopeCreator
                 float drag = 0,
                 float spring = 100,
                 float damper = 10,
-                bool hasCollision = true,
+                RopeCollisionMode collisionMode = RopeCollisionMode.COLLIDER,
                 int layer = 0)
         {
             var ropeObject = new GameObject("Rope");
@@ -85,7 +44,7 @@ namespace RopeCreator
                     _pieces: pieces,
                     _lastHinge: lastHinge,
                     _isKinematic: isKinematic,
-                    _createCollider: hasCollision,
+                    _collisionMode: collisionMode,
                     _ropeResolution: ropeResolution,
                     _layer: layer);
 
@@ -124,7 +83,7 @@ namespace RopeCreator
                 List<RopePiece> _pieces,
                 HingeJoint _lastHinge,
                 bool _isKinematic = false,
-                bool _createCollider = false,
+                RopeCollisionMode _collisionMode = RopeCollisionMode.NONE,
                 float _ropeResolution = 2,
                 int _layer = 0)
             {
@@ -154,10 +113,11 @@ namespace RopeCreator
                     spring = spring
                 };
 
-                if (_createCollider)
+                if (_collisionMode.HasFlag(RopeCollisionMode.COLLIDER) || _collisionMode.HasFlag(RopeCollisionMode.TRIGGER))
                 {
                     collider = piece.AddComponent<SphereCollider>();
                     collider.radius = Mathf.Max(_radius, .25f);
+                    collider.isTrigger = _collisionMode.HasFlag(RopeCollisionMode.TRIGGER);
                 }
 
                 if (_lastHinge)
@@ -191,11 +151,6 @@ namespace RopeCreator
             meshRenderer.sharedMesh = mesh;
 
             return ropeData;
-        }
-
-        public static object Create(Vector3 start, Vector3 end, int resolution, float radius, Material material, float distanceBetweenNodes, object mass, float drag, float spring, float damper, bool hasCollision, int layer)
-        {
-            throw new NotImplementedException();
         }
     }
 }

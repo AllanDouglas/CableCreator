@@ -13,7 +13,7 @@ namespace RopeCreator
         [SerializeField] private float drag = 0;
         [SerializeField] private float spring = 100;
         [SerializeField] private float damper = 1;
-        [SerializeField] private bool hasCollision = false;
+        [SerializeField] private RopeCollisionMode collisionMode = RopeCollisionMode.NONE;
         [Range(2, 25), SerializeField] private int resolution = 10;
         [SerializeField] private Material material;
         [Header("Rigidbody Constraints")]
@@ -37,7 +37,7 @@ namespace RopeCreator
                 drag: drag,
                 spring: spring,
                 damper: damper,
-                hasCollision: hasCollision,
+                collisionMode: collisionMode,
                 layer: LayerMask.NameToLayer(layer));
 
             foreach (var piece in data.pieces)
