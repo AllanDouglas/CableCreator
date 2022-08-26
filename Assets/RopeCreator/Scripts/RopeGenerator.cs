@@ -27,7 +27,7 @@ namespace RopeCreator
             var currentPosition = start;
             var pieces = new List<RopePiece>();
             var isKinematic = true;
-            HingeJoint lastHinge = null;
+            Joint lastHinge = null;
 
             var dot = 1f;
 
@@ -74,14 +74,14 @@ namespace RopeCreator
                 radius: radius,
                 material: material);
 
-            HingeJoint CreatePiece(
+            Joint CreatePiece(
                 float _radius,
                 float _mass,
                 GameObject _ropeObject,
                 Vector3 _direction,
                 ref Vector3 _currentPosition,
                 List<RopePiece> _pieces,
-                HingeJoint _lastHinge,
+                Joint _lastHinge,
                 bool _isKinematic = false,
                 RopeCollisionMode _collisionMode = RopeCollisionMode.NONE,
                 float _ropeResolution = 2,
@@ -98,16 +98,16 @@ namespace RopeCreator
                 rb.isKinematic = _isKinematic;
                 rb.mass = _mass;
 
-                var hinge = piece.AddComponent<HingeJoint>();
+                var joint = piece.AddComponent<CharacterJoint>();
                 var up = Quaternion.LookRotation(direction) * Vector3.up;
                 var cross = Vector3.Cross(direction, up);
 
-                hinge.axis = cross;
-                hinge.enableCollision = false;
-                hinge.enablePreprocessing = false;
-                hinge.useLimits = true;
-                hinge.useSpring = true;
-                hinge.spring = new JointSpring()
+                joint.axis = cross;
+                joint.enableCollision = false;
+                joint.enablePreprocessing = false;
+                // hinge.useLimits = true;
+                // hinge.useSpring = true;
+                joint.twistLimitSpring = new SoftJointLimitSpring()
                 {
                     damper = damper,
                     spring = spring
@@ -124,8 +124,8 @@ namespace RopeCreator
                 {
                     _lastHinge.connectedBody = rb;
                 }
-                _pieces.Add(new RopePiece(hinge, collider, rb));
-                return hinge;
+                _pieces.Add(new RopePiece(joint, collider, rb));
+                return joint;
             }
         }
 
