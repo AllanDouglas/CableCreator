@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,25 +26,24 @@ namespace RopeCreator
             var currentPosition = start;
             var pieces = new List<RopePiece>();
             var isKinematic = true;
-            Joint lastHinge = null;
+            RopePiece ropePiece = null;
 
             var dot = 1f;
 
-            var ropeResolution = distanceBetweenNodes * 2;
 
             while (Mathf.Approximately(dot, 1))
             {
-                lastHinge = CreatePiece(
+                ropePiece = CreatePiece(
                     _radius: radius,
                     _mass: mass,
                     _ropeObject: ropeObject,
                     _direction: direction,
                     _currentPosition: ref currentPosition,
                     _pieces: pieces,
-                    _lastHinge: lastHinge,
+                    _lastRopePiece: ropePiece,
                     _isKinematic: isKinematic,
                     _collisionMode: collisionMode,
-                    _ropeResolution: ropeResolution,
+                    _ropeResolution: distanceBetweenNodes,
                     _layer: layer);
 
                 isKinematic = false;
@@ -65,8 +63,10 @@ namespace RopeCreator
                 _direction: direction,
                 _currentPosition: ref currentPosition,
                 _pieces: pieces,
-                _lastHinge: lastHinge,
-                _ropeResolution: ropeResolution);
+                _lastRopePiece: ropePiece,
+                _collisionMode: collisionMode,
+                _ropeResolution: distanceBetweenNodes,
+                _createJoint: false);
 
             return Create(pieces: pieces.ToArray(),
                 ropeObject: ropeObject,
@@ -74,18 +74,19 @@ namespace RopeCreator
                 radius: radius,
                 material: material);
 
-            Joint CreatePiece(
+            RopePiece CreatePiece(
                 float _radius,
                 float _mass,
                 GameObject _ropeObject,
                 Vector3 _direction,
                 ref Vector3 _currentPosition,
                 List<RopePiece> _pieces,
-                Joint _lastHinge,
+                RopePiece _lastRopePiece,
                 bool _isKinematic = false,
                 RopeCollisionMode _collisionMode = RopeCollisionMode.NONE,
                 float _ropeResolution = 2,
-                int _layer = 0)
+                int _layer = 0,
+                bool _createJoint = true)
             {
                 var piece = new GameObject("Rope Piece");
                 SphereCollider collider = null;
@@ -98,34 +99,46 @@ namespace RopeCreator
                 rb.isKinematic = _isKinematic;
                 rb.mass = _mass;
 
-                var joint = piece.AddComponent<CharacterJoint>();
                 var up = Quaternion.LookRotation(direction) * Vector3.up;
                 var cross = Vector3.Cross(direction, up);
-
-                joint.axis = cross;
-                joint.enableCollision = false;
-                joint.enablePreprocessing = false;
-                // hinge.useLimits = true;
-                // hinge.useSpring = true;
-                joint.twistLimitSpring = new SoftJointLimitSpring()
-                {
-                    damper = damper,
-                    spring = spring
-                };
 
                 if (_collisionMode.HasFlag(RopeCollisionMode.COLLIDER) || _collisionMode.HasFlag(RopeCollisionMode.TRIGGER))
                 {
                     collider = piece.AddComponent<SphereCollider>();
-                    collider.radius = Mathf.Max(_radius, .25f);
+                    collider.radius = _radius;
                     collider.isTrigger = _collisionMode.HasFlag(RopeCollisionMode.TRIGGER);
                 }
 
-                if (_lastHinge)
+                if (_lastRopePiece != null)
                 {
-                    _lastHinge.connectedBody = rb;
+                    _lastRopePiece.joint.connectedBody = rb;
+
+                    AddJoint(rb.gameObject).connectedBody = _lastRopePiece.rigidbody;
                 }
-                _pieces.Add(new RopePiece(joint, collider, rb));
-                return joint;
+
+                RopePiece ropePiece = new RopePiece(_createJoint ? AddJoint(piece) : null, collider, rb);
+                _pieces.Add(ropePiece);
+                return ropePiece;
+
+                Joint AddJoint(GameObject go)
+                {
+                    var joint = go.AddComponent<ConfigurableJoint>();
+                    joint.axis = cross;
+                    joint.enableCollision = false;
+                    joint.enablePreprocessing = false;
+                    joint.xMotion = ConfigurableJointMotion.Limited;
+                    joint.yMotion = ConfigurableJointMotion.Limited;
+                    joint.zMotion = ConfigurableJointMotion.Limited;
+                    joint.angularXMotion = ConfigurableJointMotion.Limited;
+                    joint.angularYMotion = ConfigurableJointMotion.Limited;
+                    joint.angularZMotion = ConfigurableJointMotion.Limited;
+
+                    joint.angularYZDrive = new JointDrive() { maximumForce = 999, positionSpring = spring, positionDamper = damper };
+                    joint.angularXDrive = new JointDrive() { maximumForce = 999, positionSpring = spring, positionDamper = damper };
+
+                    return joint;
+
+                }
             }
         }
 
@@ -139,13 +152,9 @@ namespace RopeCreator
             var meshRenderer = ropeObject.AddComponent<SkinnedMeshRenderer>();
             meshRenderer.sharedMaterial = material;
 
-            var points = pieces;
-            var mesh = RopeMeshGenerator.Generate(points, resolution, radius);
+            var mesh = RopeMeshGenerator.Generate(pieces, resolution, radius);
 
-            var ropeData = new RopeObjectData(gameObject: ropeObject,
-                                      firstPiece: pieces[0].gameObject,
-                                      lastPiece: pieces[pieces.Length - 1].gameObject,
-                                      pieces);
+            var ropeData = new RopeObjectData(gameObject: ropeObject, pieces);
 
             meshRenderer.bones = ropeData.points;
             meshRenderer.sharedMesh = mesh;

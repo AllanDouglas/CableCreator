@@ -4,17 +4,16 @@ namespace RopeCreator
 {
     public sealed class RopeObjectData
     {
-        public readonly GameObject gameObject, firstPiece, lastPiece;
+        public readonly GameObject gameObject;
         public readonly RopePiece[] pieces;
-        public Transform[] points { get; private set; }
+        public readonly Transform[] points;
+        public RopePiece FirstPiece => pieces[0];
+        public RopePiece LastPiece => pieces[pieces.Length - 1];
 
         public RopeObjectData(GameObject gameObject,
-            GameObject firstPiece, GameObject lastPiece,
             RopePiece[] pieces)
         {
             this.gameObject = gameObject;
-            this.firstPiece = firstPiece;
-            this.lastPiece = lastPiece;
             this.pieces = pieces;
 
             points = new Transform[pieces.Length];
