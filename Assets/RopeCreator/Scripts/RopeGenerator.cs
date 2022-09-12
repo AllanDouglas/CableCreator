@@ -14,6 +14,7 @@ namespace RopeCreator
                 float mass,
                 float distanceBetweenNodes = 1,
                 float drag = 0,
+                float angularDrag = 0,
                 float spring = 100,
                 float damper = 10,
                 RopeCollisionMode collisionMode = RopeCollisionMode.COLLIDER,
@@ -96,6 +97,7 @@ namespace RopeCreator
                 _currentPosition += _ropeResolution * _direction;
                 var rb = piece.AddComponent<Rigidbody>();
                 rb.drag = drag;
+                rb.angularDrag = angularDrag;
                 rb.isKinematic = _isKinematic;
                 rb.mass = _mass;
 

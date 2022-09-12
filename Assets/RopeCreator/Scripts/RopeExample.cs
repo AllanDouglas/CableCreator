@@ -35,6 +35,7 @@ namespace RopeCreator
                 distanceBetweenNodes: distanceBetweenNodes,
                 mass: mass,
                 drag: drag,
+                angularDrag: 0,
                 spring: spring,
                 damper: damper,
                 collisionMode: collisionMode,
