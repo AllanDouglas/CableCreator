@@ -67,7 +67,8 @@ namespace RopeCreator
                 _lastRopePiece: ropePiece,
                 _collisionMode: collisionMode,
                 _ropeResolution: distanceBetweenNodes,
-                _createJoint: false);
+                _createJoint: false,
+                _layer: layer);
 
             return Create(pieces: pieces.ToArray(),
                 ropeObject: ropeObject,
