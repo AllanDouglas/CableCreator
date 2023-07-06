@@ -20,8 +20,11 @@ namespace RopeCreator
                 RopeCollisionMode collisionMode = RopeCollisionMode.COLLIDER,
                 int layer = 0)
         {
-            var ropeObject = new GameObject("Rope");
-            ropeObject.layer = layer;
+            var ropeObject = new GameObject()
+            {
+                name = "Rope",
+                layer = layer
+            };
 
             var direction = (end - start).normalized;
             var currentPosition = start;
@@ -70,6 +73,12 @@ namespace RopeCreator
                 _createJoint: false,
                 _layer: layer);
 
+            float pieceMass = mass / pieces.Count;
+            for (int i = 0; i < pieces.Count; i++)
+            {
+                pieces[i].rigidbody.mass = pieceMass;
+            }
+
             return Create(pieces: pieces.ToArray(),
                 ropeObject: ropeObject,
                 resolution: resolution,
@@ -104,6 +113,8 @@ namespace RopeCreator
 
                 var up = Quaternion.LookRotation(direction) * Vector3.up;
                 var cross = Vector3.Cross(direction, up);
+
+                piece.transform.up = up;
 
                 if (_collisionMode.HasFlag(RopeCollisionMode.COLLIDER) || _collisionMode.HasFlag(RopeCollisionMode.TRIGGER))
                 {
