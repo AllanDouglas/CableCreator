@@ -106,8 +106,8 @@ namespace RopeCreator
                 piece.transform.localPosition = _currentPosition;
                 _currentPosition += _ropeResolution * _direction;
                 var rb = piece.AddComponent<Rigidbody>();
-                rb.drag = drag;
-                rb.angularDrag = angularDrag;
+                rb.linearDamping = drag;
+                rb.angularDamping = angularDrag;
                 rb.isKinematic = _isKinematic;
                 rb.mass = _mass;
 
